@@ -21,7 +21,10 @@
                 {{ form.password.label(class="form-label") }}
                 {{ form.password(class="form-control") }}
             </div>
-            {{ form.submit(class="btn btn-primary") }}
+            <div class="d-flex justify-content-between">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('register') }}" class="btn btn-secondary">Kayıt Ol</a>
+            </div>
         </form>
         {% with messages = get_flashed_messages(with_categories=True) %}
           {% if messages %}
