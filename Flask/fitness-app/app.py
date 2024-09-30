@@ -69,11 +69,13 @@ def login():
         # Şifreyi kontrol et
         if user and check_password_hash(user['password'], password):
             session['user'] = username
+            flash('Giriş başarılı!', 'success')
             return redirect(url_for('dashboard'))
         else:
             flash('Kullanıcı adı veya şifre hatalı', 'danger')
 
     return render_template('login.html', form=form)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
