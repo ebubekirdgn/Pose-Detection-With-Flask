@@ -1,10 +1,11 @@
-from exercises.exercise_strategy import ExerciseStrategy
 import cv2
 import mediapipe as mp
 import numpy as np
+from exercises.exercise_strategy import ExerciseStrategy
+
 
 class BicepsCurlStrategy(ExerciseStrategy):
-    
+
     @staticmethod
     def calculate_angle(a, b, c):
         a = np.array(a)  # İlk nokta
@@ -20,20 +21,20 @@ class BicepsCurlStrategy(ExerciseStrategy):
         return angle
 
     def perform_exercise(self):
-        mp_drawing = mp.solutions.drawing_utils
+        # Pose algılama ve çizim araçları
         mp_pose = mp.solutions.pose
-        cap = cv2.VideoCapture(0)
+        mp_drawing = mp.solutions.drawing_utils
+        cap = cv2.VideoCapture(0)  # Kamerayı aç
         counter = 0
         stage = None
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while cap.isOpened():
                 ret, frame = cap.read()
-
                 if not ret:
                     break
 
-                # RGB'ye çevirme işlemi
+                # Renk dönüşümü
                 image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 image.flags.writeable = False
 
@@ -48,19 +49,19 @@ class BicepsCurlStrategy(ExerciseStrategy):
 
                     # Landmarkları al (Sol kol için dirsek, omuz ve bilek)
                     left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x * frame.shape[1],
-                                     landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * frame.shape[0]]
+                                    landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * frame.shape[0]]
                     left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x * frame.shape[1],
-                                  landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * frame.shape[0]]
                     left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x * frame.shape[1],
-                                  landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y * frame.shape[0]]
 
                     # Sağ kol için landmarkları al
                     right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x * frame.shape[1],
-                                      landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y * frame.shape[0]]
+                                    landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y * frame.shape[0]]
                     right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x * frame.shape[1],
-                                   landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y * frame.shape[0]]
                     right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x * frame.shape[1],
-                                   landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y * frame.shape[0]]
 
                     # Sol kol açısını hesapla
                     angle1 = self.calculate_angle(left_shoulder, left_elbow, left_wrist)
@@ -73,7 +74,7 @@ class BicepsCurlStrategy(ExerciseStrategy):
                     if angle1 < 30 and angle2 < 30 and stage == 'down':
                         stage = "up"
                         counter += 1  # Sayaç artır
-
+                      
                     # Ekrana yazdırma
                     cv2.putText(image, f'Counter: {counter}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     cv2.putText(image, f'{int(angle1)}', (int(left_elbow[0]), int(left_elbow[1] - 20)),
@@ -81,15 +82,17 @@ class BicepsCurlStrategy(ExerciseStrategy):
                     cv2.putText(image, f'{int(angle2)}', (int(right_elbow[0]), int(right_elbow[1] - 20)),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
-                except:
+                except Exception as e:
                     pass
 
-                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                # Pozları çiz
+                if results.pose_landmarks:
+                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
-                cv2.imshow('Biceps Curl Control', image)
+                ret, buffer = cv2.imencode('.jpg', image)  # JPEG formatına çevir
+                frame = buffer.tobytes()
 
-                if cv2.waitKey(10) & 0xFF == ord('q'):
-                    break
+                yield (b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
         cap.release()
-        cv2.destroyAllWindows()
