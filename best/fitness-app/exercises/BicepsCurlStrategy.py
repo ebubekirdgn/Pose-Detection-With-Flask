@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+
 from exercises.exercise_strategy import ExerciseStrategy
 
 

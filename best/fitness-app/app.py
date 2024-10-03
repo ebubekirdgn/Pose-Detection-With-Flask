@@ -133,7 +133,6 @@ def layout():
         return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
     return render_template('layout.html', user=session['user'])  # Oturum varsa layout sayfasını yükle
 
-
 @app.route('/logout')
 def logout():
     session.pop('user', None)
@@ -141,7 +140,7 @@ def logout():
     return redirect(url_for('login'))
 
 #--------------------------------------------------------------------HAREKETLER--------------------------------------------------------------------
-@app.route('/biceps_curl')
+@app.route('/biceps_curl', methods=['GET', 'POST'])
 def biceps_curl():
     return render_template('components/biceps_curl.html', user=session['user']) 
 
