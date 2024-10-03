@@ -81,7 +81,7 @@ def login():
         # Şifreyi kontrol et
         if user and check_password_hash(user['password'], password):
             session['user'] = username
-            flash('Giriş başarılı!', 'success')
+           #flash('Giriş başarılı!', 'success')
             return redirect(url_for('layout'))
         else:
             flash('Kullanıcı adı veya şifre hatalı', 'danger')
@@ -147,6 +147,23 @@ def biceps_curl():
 @app.route('/triceps_extension')
 def triceps_extension():
      return render_template('components/triceps_extension.html')
+
+@app.route('/lateral_raise')
+def lateral_raise():
+     return render_template('components/lateral_raise.html')
+
+@app.route('/squat')
+def squat():
+     return render_template('components/squat.html')
+
+@app.route('/shoulder_press')
+def shoulder_press():
+     return render_template('components/shoulder_press.html')
+
+@app.route('/crunch')
+def crunch():
+     return render_template('components/crunch.html')
+
 
 #--------------------------------------------------------------------KAMERA------------------------------------------------------------------------
 @app.route('/start', methods=['POST'])
