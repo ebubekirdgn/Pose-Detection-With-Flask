@@ -6,58 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biceps Curl - Live Stream</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        #container {
-            display: flex;
-            flex-direction: row;
-            height: 100vh;
-        }
-
-        #video-container {
-            width: 80%;
-            height: 930px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        button {
-            margin: 10px 0;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-
-        #video_feed {
-            width: 100%; /* Tam genişlikte */
-            height: auto; /* Yüksekliği otomatik ayarlama */
-            max-height: 90vh; /* Maksimum yüksekliği %90 ayarla */
-        }
-
-        #controls-container {
-            width: 20%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        #controls {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-    </style>
 </head>
 
 <body>
-
-    <div id="container">
-        <div id="video-container">
-            <img id="video_feed" src="" alt="Video Feed" />
-        </div>
-        <div id="controls-container">
-            <div id="controls">
+    <div class="container">
+        <div class="jumbotron">
+            <img id="video_feed" src="/video_feed" alt="Video Feed" style="width: 100%; height: auto;" />
+            <div class="controls">
                 <button onclick="startCamera()">Start Camera</button>
                 <button onclick="stopCamera()">Stop Camera</button>
                 <button onclick="finishStream()">Finish</button>
@@ -69,7 +24,7 @@
     <script>
         function startCamera() {
             fetch('/start', {
-                method: 'POST' // Burada POST isteği gönderiyoruz
+                method: 'POST'
             })
                 .then(response => {
                     if (!response.ok) {
@@ -80,10 +35,9 @@
                 .catch(error => console.error('Error:', error));
         }
 
-
         function stopCamera() {
             fetch('/stop', {
-                method: 'POST'  // Burada POST isteği gönderiyoruz
+                method: 'POST'
             })
                 .then(response => {
                     if (!response.ok) {
@@ -94,20 +48,18 @@
                 .catch(error => console.error('Error:', error));
         }
 
-
         function finishStream() {
             fetch('/finish', {
-                method: 'POST'  // POST isteği gönderiyoruz
+                method: 'POST'
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to finish stream.');
-                }
-            })
-            .then(data => console.log(data))  // Sunucudan gelen yanıtı logla
-            .catch(error => console.error('Error:', error));
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to finish stream.');
+                    }
+                })
+                .then(data => console.log(data))  // Sunucudan gelen yanıtı logla
+                .catch(error => console.error('Error:', error));
         }
-
     </script>
 </body>
 
