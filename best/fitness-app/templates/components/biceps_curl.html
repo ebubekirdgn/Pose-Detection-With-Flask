@@ -38,6 +38,8 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         // Tarihi otomatik olarak ayarla
         document.getElementById("date").innerText = new Date().toLocaleDateString();
@@ -95,14 +97,22 @@
                 .then(data => {
                     if (data.status === 'Exercise Finished') {
                         // Başarılı bildirim
-                        toastr.success('Egzersiz başarıyla kaydedildi!', 'Başarılı');
+                        Swal.fire({
+                            title: "Exercise Kaydedildi!",
+                            icon: "success"
+                        });
                     } else {
-                        // Hata bildirimi
-                        toastr.error('Egzersiz kaydedilemedi!', 'Hata');
+                        Swal.fire({
+                            title: "Bir hata oluştu!",
+                            icon: "warning"
+                        });
                     }
                 })
                 .catch(error => {
-                    toastr.error('Bir hata oluştu!', 'Hata');
+                    Swal.fire({
+                        title: "Bir hata oluştu!",
+                        icon: "warning"
+                    });
                     console.error('Error:', error);
                 });
         }

@@ -9,7 +9,7 @@ from exercises.triceps_extension_strategy import TricepsExtensionStrategy
 from exercises.exercise_strategy import ExerciseStrategy
 from models.exercise import add_exercise, create_exercises_table
 from models.user import create_user_table, get_db_connection
-
+from datetime import datetime  
 
 app = Flask(__name__)
 
@@ -162,7 +162,6 @@ def stop_camera():
     biceps_strategy.stop_exercise()  # Egzersizi durdurma işlevi
     return jsonify(status='Camera Stopped')
 
-from datetime import datetime  # datetime sınıfını ekliyoruz
 
 @app.route('/finish', methods=['POST'])
 def finish_stream():
