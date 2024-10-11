@@ -8,9 +8,9 @@ from exercises.exercise_strategy import ExerciseStrategy
 class BicepsCurlStrategy(ExerciseStrategy):
 
     def __init__(self):
-            # Counter'ı sınıfın bir özelliği olarak tanımlıyoruz
-            self.counter = 0
-            self.stage = None
+        self.counter = 0
+        self.is_exercising = False
+        self.cap = None  # VideoCapture nesnesi
             
     @staticmethod
     def calculate_angle(a, b, c):
@@ -28,14 +28,15 @@ class BicepsCurlStrategy(ExerciseStrategy):
 
     def perform_exercise(self):
         # Pose algılama ve çizim araçları
+        self.is_exercising = True
         mp_pose = mp.solutions.pose
         mp_drawing = mp.solutions.drawing_utils
-        cap = cv2.VideoCapture(0)  # Kamerayı aç
+        self.cap = cv2.VideoCapture(0)  # Kamerayı aç
         self.stage = None
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-            while cap.isOpened():
-                ret, frame = cap.read()
+            while self.cap.isOpened():
+                ret, frame = self.cap.read()
                 if not ret:
                     break
 
@@ -100,7 +101,16 @@ class BicepsCurlStrategy(ExerciseStrategy):
                 yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-        cap.release()
+        self.cap.release()
 
+    def stop_exercise(self):
+        self.is_exercising = False
+        if self.cap:
+            self.cap.release()  # Kamerayı serbest bırak
+        cv2.destroyAllWindows()  # Tüm pencereleri kapat
+    
+    def reset_counter(self):
+        self.counter = 0
+        
     def get_counter(self):
         return self.counter  # Sayaç değerini döndüren fonksiyon

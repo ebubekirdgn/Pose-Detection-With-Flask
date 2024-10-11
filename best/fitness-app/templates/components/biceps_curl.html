@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biceps Curl - Live Stream</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
 </head>
 
 <body>
@@ -65,7 +66,7 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
-       
+
         function stopCamera() {
             document.getElementById('biceps_video_feed').src = "";  // Video feed'i durdur
         }
@@ -88,15 +89,22 @@
         }
 
         function finishStream() {
-            fetch('/finish', {
-                method: 'POST'
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to finish stream.');
+            // Finish POST isteğini gönder
+            fetch('/finish', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'Exercise Finished') {
+                        // Başarılı bildirim
+                        toastr.success('Egzersiz başarıyla kaydedildi!', 'Başarılı');
+                    } else {
+                        // Hata bildirimi
+                        toastr.error('Egzersiz kaydedilemedi!', 'Hata');
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    toastr.error('Bir hata oluştu!', 'Hata');
+                    console.error('Error:', error);
+                });
         }
 
     </script>
