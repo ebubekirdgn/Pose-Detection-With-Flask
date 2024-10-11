@@ -4,15 +4,15 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
-from exercises.bicepsCurlStrategy import BicepsCurlStrategy  # Doğru içe aktarma
-from exercises.tricepsExtensionStrategy import TricepsExtensionStrategy
+from exercises.bicep_curl_strategy import BicepsCurlStrategy  # Doğru içe aktarma
+from exercises.triceps_extension_strategy import TricepsExtensionStrategy
 from exercises.exercise_strategy import ExerciseStrategy
 import mediapipe as mp
 from functools import wraps
 
 app = Flask(__name__)
 
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app.secret_key = "your_secret_key"
 
 # Global counter değişkeni
 
@@ -143,6 +143,12 @@ def logout():
 @app.route('/biceps_curl', methods=['GET', 'POST'])
 def biceps_curl():
     return render_template('components/biceps_curl.html', user=session['user']) 
+
+@app.route('/get_counter')
+def get_counter():
+    # Sayaç değerini JSON formatında döndür
+    counter_value = biceps_strategy.get_counter()
+    return jsonify({'counter': counter_value})
 
 @app.route('/triceps_extension')
 def triceps_extension():

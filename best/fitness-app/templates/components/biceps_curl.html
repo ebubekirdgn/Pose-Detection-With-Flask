@@ -13,8 +13,7 @@
         <div class="row">
             <div class="col-md-8">
                 <div class="jumbotron">
-                    <img id="biceps_video_feed" src="#" alt="Video Feed"
-                        style="width: 100%; height: auto;" />
+                    <img id="biceps_video_feed" src="#" alt="Video Feed" style="width: 100%; height: auto;" />
                     <div class="controls mt-3">
                         <button class="btn btn-primary" onclick="startCamera()">Start Camera</button>
                         <button class="btn btn-secondary" onclick="stopCamera()">Stop Camera</button>
@@ -29,7 +28,7 @@
                     </div>
                     <div class="card-body">
                         <p><strong>Athlete Name:</strong> {{ user }}</p>
-                        <p><strong>Counter: </strong></p>
+                        <p><strong>Counter: <span id="counter">0</span> </strong></p>
                         <p><strong>Date:</strong> <span id="date"></span></p>
                     </div>
                 </div>
@@ -41,6 +40,17 @@
     <script>
         // Tarihi otomatik olarak ayarla
         document.getElementById("date").innerText = new Date().toLocaleDateString();
+
+        function updateCounter() {
+            $.getJSON("/get_counter", function (data) {
+                $("#counter").text(data.counter);
+            });
+        }
+
+        // Sayfa yüklendikten sonra her 1 saniyede bir counter'ı güncelle
+        $(document).ready(function () {
+            setInterval(updateCounter, 1000);  // 2 saniyede bir günceller
+        });
 
         function startCamera() {
             fetch('/start', {
@@ -55,14 +65,11 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
-        function startCamera() {
-            document.getElementById('biceps_video_feed').src = "/biceps_video_feed";  // Video feed başlat
-        }
-    
+       
         function stopCamera() {
             document.getElementById('biceps_video_feed').src = "";  // Video feed'i durdur
         }
-    
+
         function finishStream() {
             document.getElementById('biceps_video_feed').src = "";  // Video feed'i bitir
             alert('Video stream finished');
@@ -93,7 +100,7 @@
         }
 
     </script>
-   
+
 </body>
 
 </html>

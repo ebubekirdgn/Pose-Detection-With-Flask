@@ -7,6 +7,11 @@ from exercises.exercise_strategy import ExerciseStrategy
 
 class BicepsCurlStrategy(ExerciseStrategy):
 
+    def __init__(self):
+            # Counter'ı sınıfın bir özelliği olarak tanımlıyoruz
+            self.counter = 0
+            self.stage = None
+            
     @staticmethod
     def calculate_angle(a, b, c):
         a = np.array(a)  # İlk nokta
@@ -26,8 +31,7 @@ class BicepsCurlStrategy(ExerciseStrategy):
         mp_pose = mp.solutions.pose
         mp_drawing = mp.solutions.drawing_utils
         cap = cv2.VideoCapture(0)  # Kamerayı aç
-        counter = 0
-        stage = None
+        self.stage = None
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while cap.isOpened():
@@ -71,13 +75,13 @@ class BicepsCurlStrategy(ExerciseStrategy):
 
                     # Açı kontrolü: Biceps curl aşağı mı yukarı mı?
                     if angle1 > 160 and angle2 > 160:
-                        stage = "down"
-                    if angle1 < 30 and angle2 < 30 and stage == 'down':
-                        stage = "up"
-                        counter += 1  # Sayaç artır
-                      
+                        self.stage = "down"
+                    if angle1 < 30 and angle2 < 30 and self.stage == 'down':
+                        self.stage = "up"
+                        self.counter += 1  # Sayaç artır
+
                     # Ekrana yazdırma
-                    cv2.putText(image, f'Counter: {counter}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    cv2.putText(image, f'Counter: {self.counter}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     cv2.putText(image, f'{int(angle1)}', (int(left_elbow[0]), int(left_elbow[1] - 20)),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
                     cv2.putText(image, f'{int(angle2)}', (int(right_elbow[0]), int(right_elbow[1] - 20)),
@@ -97,3 +101,6 @@ class BicepsCurlStrategy(ExerciseStrategy):
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
         cap.release()
+
+    def get_counter(self):
+        return self.counter  # Sayaç değerini döndüren fonksiyon
