@@ -3,12 +3,12 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
-import sqlite3
 from exercises.bicep_curl_strategy import BicepsCurlStrategy  # Doğru içe aktarma
 from exercises.triceps_extension_strategy import TricepsExtensionStrategy
 from exercises.exercise_strategy import ExerciseStrategy
-import mediapipe as mp
-from functools import wraps
+from models.exercise import create_exercises_table
+from models.user import create_user_table, get_db_connection
+
 
 app = Flask(__name__)
 
@@ -18,29 +18,8 @@ app.secret_key = "your_secret_key"
 
 biceps_strategy = BicepsCurlStrategy()
 
-# Veri tabanı bağlantısı
-def get_db_connection():
-    conn = sqlite3.connect('db.sqlite3')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-# Kullanıcı tablosu oluşturma
-def create_user_table():
-    conn = get_db_connection()
-    conn.execute('''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        first_name TEXT NOT NULL,
-        last_name TEXT NOT NULL,
-        username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        date_of_birth DATE NOT NULL,
-        height REAL NOT NULL,
-        weight REAL NOT NULL
-    )''')
-    conn.commit()
-    conn.close()
-
-create_user_table()
+ 
+ 
 
 # Login formu
 class LoginForm(FlaskForm):
@@ -193,4 +172,6 @@ def biceps_video_feed():
     return Response(biceps_strategy.perform_exercise(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
+    create_user_table()
+    create_exercises_table()
     app.run(debug=True)
