@@ -192,7 +192,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Biceps Curl</p>
-                        <h4 class="card-title">1,294</h4>
+                        <h4 class="card-title">{{ totals.total_biceps_curl }}</h4>
                       </div>
                     </div>
                   </div>
@@ -212,7 +212,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Triceps Extension</p>
-                        <h4 class="card-title">1303</h4>
+                        <h4 class="card-title">{{ totals.total_triceps_extension }}</h4>
                       </div>
                     </div>
                   </div>
@@ -232,7 +232,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Lateral Raise</p>
-                        <h4 class="card-title">1,345</h4>
+                        <h4 class="card-title">{{ totals.total_lateral_raise }}</h4>
                       </div>
                     </div>
                   </div>
@@ -252,7 +252,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Squat</p>
-                        <h4 class="card-title">576</h4>
+                        <h4 class="card-title">{{ totals.total_squat }}</h4>
                       </div>
                     </div>
                   </div>
@@ -272,7 +272,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Crunch</p>
-                        <h4 class="card-title">576</h4>
+                        <h4 class="card-title"> {{ totals.total_crunch }}</h4>
                       </div>
                     </div>
                   </div>
@@ -292,7 +292,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Shoulder Press</p>
-                        <h4 class="card-title">576</h4>
+                        <h4 class="card-title">{{ totals.total_shoulder_press }}</h4>
                       </div>
                     </div>
                   </div>
@@ -302,32 +302,11 @@
           </div>
           <div class="row">
             <div class="col-md-12">
-              <div class="card card-round">
-                <div class="card-header">
-                  <div class="card-head-row">
-                    <div class="card-title">User Statistics</div>
-                    <div class="card-tools">
-                      <a href="#" class="btn btn-label-success btn-round btn-sm me-2">
-                        <span class="btn-label">
-                          <i class="fa fa-pencil"></i>
-                        </span>
-                        Export
-                      </a>
-                      <a href="#" class="btn btn-label-info btn-round btn-sm">
-                        <span class="btn-label">
-                          <i class="fa fa-print"></i>
-                        </span>
-                        Print
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="chart-container" style="min-height: 375px">
-                    <canvas id="statisticsChart"></canvas>
-                  </div>
-                  <div id="myChartLegend"></div>
-                </div>
+              <div class="card card-round" id="exercise-content">
+                {% block content %}
+                  <!-- Varsayılan içerik buraya gelecek -->
+                {% endblock %}
+               
               </div>
             </div>
 
@@ -368,6 +347,19 @@
         sessionStorage.fonts = true;
       },
     });
+
+    function loadExercise(exercise) {
+            $.ajax({
+                url: `/${exercise}`,  // Egzersiz URL'si
+                type: 'GET',
+                success: function(response) {
+                    $('#exercise-content').html(response);  // Gelen içeriği yerleştir
+                },
+                error: function() {
+                    alert('Egzersiz yüklenirken bir hata oluştu.');
+                }
+            });
+        }
   </script>
   <!--   Core JS Files   -->
   <script src="{{ url_for('static', filename='js/core/jquery-3.7.1.min.js') }}"></script>

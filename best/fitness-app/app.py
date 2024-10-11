@@ -5,22 +5,18 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from exercises.bicep_curl_strategy import BicepsCurlStrategy  # Doğru içe aktarma
+from exercises.crunch_strategy import CrunchStrategy
 from exercises.triceps_extension_strategy import TricepsExtensionStrategy
-from exercises.exercise_strategy import ExerciseStrategy
+from exercises.shoulder_press_strategy import ShoulderPressStrategy
+from exercises.lateral_raise_strategy import LateralRaiseStrategy
 from models.exercise import add_exercise, create_exercises_table
 from models.user import create_user_table, get_db_connection
 from datetime import datetime  
 
 app = Flask(__name__)
-
 app.secret_key = "your_secret_key"
 
-# Global counter değişkeni
-
 biceps_strategy = BicepsCurlStrategy()
-
- 
- 
 
 # Login formu
 class LoginForm(FlaskForm):
@@ -45,7 +41,6 @@ class RegisterForm(FlaskForm):
 def home():
     return redirect(url_for('login'))
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()  # Form nesnesi oluşturuluyor
@@ -67,7 +62,6 @@ def login():
             flash('Kullanıcı adı veya şifre hatalı', 'danger')
 
     return render_template('login.html', form=form)
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -106,12 +100,16 @@ def register():
 
     return render_template('register.html', form=form)
 
-
 @app.route('/layout')
 def layout():
     if 'user' not in session:
         return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
-    return render_template('layout.html', user=session['user'])  # Oturum varsa layout sayfasını yükle
+
+    user = session['user']
+    biceps_strategy = BicepsCurlStrategy()
+    totals = biceps_strategy.get_totals(user)  # Toplam değerleri al
+
+    return render_template('layout.html', user=user, totals=totals)  # Toplamları sayfaya gönder
 
 @app.route('/logout')
 def logout():
@@ -122,34 +120,65 @@ def logout():
 #--------------------------------------------------------------------HAREKETLER--------------------------------------------------------------------
 @app.route('/biceps_curl', methods=['GET', 'POST'])
 def biceps_curl():
-    return render_template('components/biceps_curl.html', user=session['user']) 
+    if 'user' not in session:
+        return jsonify(status='Unauthorized'), 401  # Kullanıcı oturumu yoksa hata döndür
 
-@app.route('/get_counter')
-def get_counter():
-    # Sayaç değerini JSON formatında döndür
-    counter_value = biceps_strategy.get_counter()
-    return jsonify({'counter': counter_value})
+    user = session['user']
+    biceps_strategy = BicepsCurlStrategy()
+    totals = biceps_strategy.get_totals(user)  # Toplam değerleri al
+
+    return render_template('components/biceps_curl.html', user=session['user'],totals=totals) 
 
 @app.route('/triceps_extension')
 def triceps_extension():
-     return render_template('components/triceps_extension.html')
+     if 'user' not in session:
+        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
+
+     user = session['user']
+     triceps_extension_strategy = TricepsExtensionStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
+     totals = triceps_extension_strategy.get_totals(user)  # Toplam değerleri al
+     return render_template('components/triceps_extension.html', user=user, totals=totals)
 
 @app.route('/lateral_raise')
 def lateral_raise():
-     return render_template('components/lateral_raise.html')
+     if 'user' not in session:
+        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
+
+     user = session['user']
+     lateral_raise_strategy = LateralRaiseStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
+     totals = lateral_raise_strategy.get_totals(user)  # Toplam değerleri al
+     return render_template('components/lateral_raise.html', user=user, totals=totals)
 
 @app.route('/squat')
 def squat():
-     return render_template('components/squat.html')
+     if 'user' not in session:
+        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
+
+     user = session['user']
+     shoulder_press_strategy = CrunchStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
+     totals = shoulder_press_strategy.get_totals(user)  # Toplam değerleri al
+     return render_template('components/squat.html', user=user, totals=totals)
 
 @app.route('/shoulder_press')
 def shoulder_press():
-     return render_template('components/shoulder_press.html')
+     if 'user' not in session:
+        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
+
+     user = session['user']
+     shoulder_press_strategy = ShoulderPressStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
+     totals = shoulder_press_strategy.get_totals(user)  # Toplam değerleri al
+     return render_template('components/shoulder_press.html', user=user, totals=totals)
 
 @app.route('/crunch')
 def crunch():
-     return render_template('components/crunch.html')
+    if 'user' not in session:
+        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
 
+    user = session['user']
+    crunch_strategy = CrunchStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
+    totals = crunch_strategy.get_totals(user)  # Toplam değerleri al
+
+    return render_template('components/crunch.html', user=user, totals=totals)  # Toplamları sayfaya gönder
 
 #--------------------------------------------------------------------KAMERA------------------------------------------------------------------------
 @app.route('/start', methods=['POST'])
@@ -161,7 +190,6 @@ def start():
 def stop_camera():
     biceps_strategy.stop_exercise()  # Egzersizi durdurma işlevi
     return jsonify(status='Camera Stopped')
-
 
 @app.route('/finish', methods=['POST'])
 def finish_stream():
@@ -209,6 +237,12 @@ def finish_stream():
 @app.route('/biceps_video_feed')
 def biceps_video_feed():
     return Response(biceps_strategy.perform_exercise(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/get_counter')
+def get_counter():
+    # Sayaç değerini JSON formatında döndür
+    counter_value = biceps_strategy.get_counter()
+    return jsonify({'counter': counter_value})
 
 if __name__ == '__main__':
     create_user_table()
