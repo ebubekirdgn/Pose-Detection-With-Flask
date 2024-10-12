@@ -4,6 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
+from exercises import squat_strategy
 from exercises.bicep_curl_strategy import BicepsCurlStrategy  # Doğru içe aktarma
 from exercises.crunch_strategy import CrunchStrategy
 from exercises.triceps_extension_strategy import TricepsExtensionStrategy
@@ -181,23 +182,43 @@ def crunch():
     return render_template('components/crunch.html', user=user, totals=totals)  # Toplamları sayfaya gönder
 
 #--------------------------------------------------------------------KAMERA------------------------------------------------------------------------
-@app.route('/start', methods=['POST'])
-def start():
-    biceps_strategy.perform_exercise()  # Egzersizi başlat
+@app.route('/start/<exercise_name>', methods=['POST'])
+def start(exercise_name):
+    strategies = {
+        'biceps_curl': biceps_strategy,
+        # Diğer stratejileri buraya ekleyin
+    }
+    strategy = strategies.get(exercise_name)
+    strategy.perform_exercise()  # Egzersizi başlat
     return jsonify(status='Camera Started')
 
-@app.route('/stop', methods=['POST'])
-def stop_camera():
-    biceps_strategy.stop_exercise()  # Egzersizi durdurma işlevi
+@app.route('/stop/<exercise_name>', methods=['POST'])
+def stop_camera(exercise_name):
+    strategies = {
+        'biceps_curl': biceps_strategy,
+        # Diğer stratejileri buraya ekleyin
+    }
+    strategy = strategies.get(exercise_name)
+    strategy.stop_exercise()  # Egzersizi durdurma işlevi
     return jsonify(status='Camera Stopped')
 
-@app.route('/finish', methods=['POST'])
-def finish_stream():
+@app.route('/finish/<exercise_name>', methods=['POST'])
+def finish_stream(exercise_name):
     if 'user' not in session:
         return jsonify(status='Unauthorized'), 401  # Kullanıcı oturumu yoksa hata döndür
 
     user = session['user']
-    counter_value = biceps_strategy.get_counter()  # Sayaç değerini al
+    strategies = {
+        'biceps_curl': biceps_strategy,
+        # Diğer stratejileri buraya ekleyin
+    }
+    
+    strategy = strategies.get(exercise_name)  # Gelen egzersiz adına göre stratejiyi al
+
+    if not strategy:
+        return jsonify(status='Invalid exercise name'), 400  # Geçersiz egzersiz adı
+
+    counter_value = strategy.get_counter()  # Seçilen strateji üzerinden sayaç değerini al
     current_date = datetime.now().date()  # Şu anki tarihi al
 
     if counter_value > 0:
@@ -207,17 +228,17 @@ def finish_stream():
                                        (user, current_date)).fetchone()
 
         if existing_record:
-            # Aynı tarihte zaten kayıt var, mevcut biceps curl sayısını güncelle
-            new_biceps_curl = existing_record['biceps_curl'] + counter_value
-            conn.execute('''
+            # Aynı tarihte zaten kayıt var, mevcut sayıyı güncelle
+            new_count = existing_record[exercise_name] + counter_value  # Dinamik güncelleme
+            conn.execute(f'''
                 UPDATE exercises
-                SET biceps_curl = ?
+                SET {exercise_name} = ?
                 WHERE user = ? AND created_date = ?
-            ''', (new_biceps_curl, user, current_date))
+            ''', (new_count, user, current_date))
             conn.commit()
         else:
             # Aynı tarihte kayıt yok, yeni bir kayıt ekle
-            conn.execute('''
+            conn.execute(''' 
                 INSERT INTO exercises (user, biceps_curl, triceps_extension, lateral_raise, squat, shoulder_press, crunch, created_date)
                 VALUES (?, ?, 0, 0, 0, 0, 0, ?)
             ''', (user, counter_value, current_date))
@@ -226,7 +247,7 @@ def finish_stream():
         conn.close()
 
         # Sayaç sıfırlama işlemi
-        biceps_strategy.reset_counter()
+        strategy.reset_counter()
 
         # Kullanıcıya başarı mesajı döndür
         return jsonify(status='Exercise Finished', counter=counter_value)
@@ -234,15 +255,27 @@ def finish_stream():
         return jsonify(status='No data to save')  # Sayaç sıfırsa veri kaydedilmez
 
 #-------------------------------------------------------------------HAREKET METHODLARI------------------------------------------------------------
-@app.route('/biceps_video_feed')
-def biceps_video_feed():
-    return Response(biceps_strategy.perform_exercise(), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/video_feed/<exercise_name>')
+def video_feed(exercise_name):
+    strategy = {
+        'biceps_curl': biceps_strategy,
+        # Diğer stratejileri buraya ekleyin
+    }.get(exercise_name)
+    return Response(strategy.perform_exercise(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/get_counter')
-def get_counter():
-    # Sayaç değerini JSON formatında döndür
-    counter_value = biceps_strategy.get_counter()
-    return jsonify({'counter': counter_value})
+@app.route('/get_counter/<exercise_name>')
+def get_counter(exercise_name):
+    # exercise_name'a göre doğru stratejiyi seçin
+    strategy = {
+        'biceps_curl': biceps_strategy,
+        # Diğer stratejileri buraya ekleyin
+    }.get(exercise_name)
+    
+    if strategy:
+        counter_value = strategy.get_counter()  # Counter değerini al
+        return jsonify({'counter': counter_value})
+    else:
+        return jsonify({'error': 'Geçersiz egzersiz adı.'}), 404
 
 if __name__ == '__main__':
     create_user_table()
