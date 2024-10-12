@@ -44,6 +44,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        document.getElementById('date').textContent = new Date().toISOString().split('T')[0]; // Tarihi al ve göster
+
         // Tarihi otomatik olarak ayarla
         function updateCounter() {
             const exercise_name = 'biceps_curl'; // Bu değeri dinamik olarak da alabilirsiniz
@@ -51,7 +53,6 @@
                 $("#counter").text(data.counter);
             });
         }
-
         $(document).ready(function () {
             setInterval(updateCounter, 1000);
         });
@@ -69,11 +70,9 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
-
         function stopCamera() {
             document.getElementById('video_feed').src = "";  // Video feed'i durdur
         }
-
         function finishStream() {
             document.getElementById('video_feed').src = "";  // Video feed'i bitir
             alert('Video stream finished');
