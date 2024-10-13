@@ -46,9 +46,13 @@
     <script>
         // Tarihi otomatik olarak ayarla
         function updateCounter() {
-            const exercise_name = 'biceps_curl'; // Bu değeri dinamik olarak da alabilirsiniz
-            $.getJSON(`/get_counter/${exercise_name}`, function (data) {
-                $("#counter").text(data.counter);
+            const exerciseName = 'biceps_curl'; // Bu değeri dinamik olarak da alabilirsiniz
+            $.get(`/get_counter/${exerciseName}`, function (data) {
+                if (data.counter !== undefined) {
+                    $('#counter').text(data.counter);
+                } else {
+                    console.error(data.error); // Hata durumunu konsola yazdır
+                }
             });
         }
 
@@ -92,19 +96,38 @@
         }
 
         function finishStream() {
-            // Finish POST isteğini gönder
-            fetch('/finish/biceps_curl', { method: 'POST' })
+            // Önce sayaç değerini kontrol et
+            fetch('/get_counter/biceps_curl')
                 .then(response => response.json())
                 .then(data => {
+                    if (data.counter > 0) {
+                        // Sayaç değeri pozitifse, finish POST isteğini gönder
+                        return fetch('/finish/biceps_curl', { method: 'POST' });
+                    } else {
+                        // Sayaç sıfırsa hata bildirimi
+                        Swal.fire({
+                            title: "Hata",
+                            text: "Henüz sayım yapılmadı!",
+                            icon: "warning"
+                        });
+                        throw new Error('Counter is zero');
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();  // Yanıtı JSON olarak çözümle
+                })
+                .then(data => {
                     if (data.status === 'Exercise Finished') {
-                        // Başarılı bildirim
                         Swal.fire({
                             title: "Exercise Kaydedildi!",
                             icon: "success"
                         });
                     } else {
                         Swal.fire({
-                            title: "Bir hata oluştu!",
+                            title: "Bir hata oluştu: " + data.status,
                             icon: "warning"
                         });
                     }
@@ -112,11 +135,14 @@
                 .catch(error => {
                     Swal.fire({
                         title: "Bir hata oluştu!",
-                        icon: "warning"
+                        text: error.message,
+                        icon: "error"
                     });
                     console.error('Error:', error);
                 });
         }
+
+
 
     </script>
 

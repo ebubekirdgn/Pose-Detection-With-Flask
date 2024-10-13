@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
-from exercises import squat_strategy
+from exercises.exercisemanager import ExerciseManager
 from exercises.bicep_curl_strategy import BicepsCurlStrategy  # Doğru içe aktarma
 from exercises.crunch_strategy import CrunchStrategy
 from exercises.triceps_extension_strategy import TricepsExtensionStrategy
@@ -187,18 +187,31 @@ def crunch():
     return render_template('components/crunch.html', user=user, totals=totals)  # Toplamları sayfaya gönder
 
 #--------------------------------------------------------------------KAMERA------------------------------------------------------------------------
+exercise_manager = ExerciseManager()
+
 @app.route('/start/<exercise_name>', methods=['POST'])
 def start(exercise_name):
-    strategy = strategies.get(exercise_name)
+    if 'user' not in session:
+        return jsonify(status='Unauthorized'), 401  # Kullanıcı oturumu yoksa hata döndür
+
+    strategy = exercise_manager.get_strategy(exercise_name)
     strategy.perform_exercise()  # Egzersizi başlat
-    strategy.reset_counter()
     return jsonify(status='Camera Started')
+
 
 @app.route('/stop/<exercise_name>', methods=['POST'])
 def stop_camera(exercise_name):
-    strategy = strategies.get(exercise_name)
-    strategy.stop_exercise()  # Egzersizi durdurma işlevi
-    return jsonify(status='Camera Stopped')
+    if 'user' not in session:
+        return jsonify({'error': 'Kullanıcı oturumu yok.'}), 401  # Kullanıcı oturumu yoksa hata döndür
+
+    # Kullanıcıya özgü stratejiyi almak için ExerciseManager kullanımı
+    try:
+        strategy = exercise_manager.get_strategy(exercise_name)  # Stratejiyi al
+        strategy.stop_exercise()  # Egzersizi durdurma işlevi
+        return jsonify(status='Camera Stopped')
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400  # Geçersiz egzersiz adı hatası
+
 
 @app.route('/finish/<exercise_name>', methods=['POST'])
 def finish_stream(exercise_name):
@@ -206,9 +219,12 @@ def finish_stream(exercise_name):
         return jsonify(status='Unauthorized'), 401  # Kullanıcı oturumu yoksa hata döndür
 
     user = session['user']
-    strategy = strategies.get(exercise_name)  # Gelen egzersiz adına göre stratejiyi al
-    if not strategy:
-        return jsonify(status='Invalid exercise name'), 400  # Geçersiz egzersiz adı
+    
+    # Kullanıcıya özgü stratejiyi almak için ExerciseManager kullanımı
+    try:
+        strategy = exercise_manager.get_strategy(exercise_name)  # Gelen egzersiz adına göre stratejiyi al
+    except ValueError as e:
+        return jsonify(status='Invalid exercise name', error=str(e)), 400  # Geçersiz egzersiz adı
 
     counter_value = strategy.get_counter()  # Seçilen strateji üzerinden sayaç değerini al
     current_date = datetime.now().date()  # Şu anki tarihi al
@@ -246,22 +262,23 @@ def finish_stream(exercise_name):
     else:
         return jsonify(status='No data to save')  # Sayaç sıfırsa veri kaydedilmez
 
+
 #-------------------------------------------------------------------HAREKET METHODLARI------------------------------------------------------------
 @app.route('/video_feed/<exercise_name>')
 def video_feed(exercise_name):
-    strategy = strategies.get(exercise_name)
+    strategy = exercise_manager.get_strategy(exercise_name)  # Egzersiz stratejisini al
     return Response(strategy.perform_exercise(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/get_counter/<exercise_name>')
 def get_counter(exercise_name):
-    # exercise_name'a göre doğru stratejiyi seçin
-    strategy = strategies.get(exercise_name)
+    if 'user' not in session:
+        return jsonify({'error': 'Kullanıcı oturumu yok.'}), 401  # Kullanıcı oturumu yoksa hata döndür
+
+    strategy = exercise_manager.get_strategy(exercise_name)  # Stratejiyi al
+    counter_value = strategy.get_counter() 
     
-    if strategy:
-        counter_value = strategy.get_counter()  # Counter değerini al
-        return jsonify({'counter': counter_value})
-    else:
-        return jsonify({'error': 'Geçersiz egzersiz adı.'}), 404
+    print("counter_value",counter_value)
+    return jsonify({'counter': counter_value})  # Sayaç değerini döndür
 
 if __name__ == '__main__':
     create_user_table()

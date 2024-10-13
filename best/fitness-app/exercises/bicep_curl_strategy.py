@@ -113,7 +113,7 @@ class BicepsCurlStrategy(ExerciseStrategy):
         self.counter = 0
         
     def get_counter(self):
-        return self.counter  # Sayaç değerini döndüren fonksiyon
+        return self.counter # Sayaç değerini döndüren fonksiyon
   
     def get_totals(self, user):
         return self.get_total_exercises(user)  # Ortak metodu kullan   
