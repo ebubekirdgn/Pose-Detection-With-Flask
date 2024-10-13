@@ -13,14 +13,16 @@ class ExerciseStrategy(ABC):
         
         # Her hareket için toplam sayıları al
         cursor.execute('''
-            SELECT
-                (SELECT SUM(biceps_curl) FROM exercises WHERE user = ?) AS total_biceps_curl,
-                (SELECT SUM(triceps_extension) FROM exercises WHERE user = ?) AS total_triceps_extension,
-                (SELECT SUM(lateral_raise) FROM exercises WHERE user = ?) AS total_lateral_raise,
-                (SELECT SUM(squat) FROM exercises WHERE user = ?) AS total_squat,
-                (SELECT SUM(shoulder_press) FROM exercises WHERE user = ?) AS total_shoulder_press,
-                (SELECT SUM(crunch) FROM exercises WHERE user = ?) AS total_crunch
-        ''', (user, user, user, user, user, user))
+            SELECT 
+                SUM(biceps_curl) AS total_biceps_curl,
+                SUM(triceps_extension) AS total_triceps_extension,
+                SUM(lateral_raise) AS total_lateral_raise,
+                SUM(squat) AS total_squat,
+                SUM(shoulder_press) AS total_shoulder_press,
+                SUM(crunch) AS total_crunch
+            FROM exercises
+            WHERE user = ?
+        ''', (user,))
         
         totals = cursor.fetchone()
         conn.close()

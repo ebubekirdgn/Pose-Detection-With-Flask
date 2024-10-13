@@ -191,6 +191,7 @@ def crunch():
 def start(exercise_name):
     strategy = strategies.get(exercise_name)
     strategy.perform_exercise()  # Egzersizi başlat
+    strategy.reset_counter()
     return jsonify(status='Camera Started')
 
 @app.route('/stop/<exercise_name>', methods=['POST'])
