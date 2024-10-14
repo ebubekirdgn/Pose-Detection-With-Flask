@@ -4,25 +4,30 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 from werkzeug.security import generate_password_hash, check_password_hash
-from exercises.exercisemanager import ExerciseManager
-from exercises.bicep_curl_strategy import BicepsCurlStrategy  # Doğru içe aktarma
+from exercises.bicep_curl_strategy import BicepsCurlStrategy
 from exercises.crunch_strategy import CrunchStrategy
 from exercises.triceps_extension_strategy import TricepsExtensionStrategy
 from exercises.shoulder_press_strategy import ShoulderPressStrategy
 from exercises.lateral_raise_strategy import LateralRaiseStrategy
+from exercises.squat_strategy import SquatStrategy
 from models.exercise import add_exercise, create_exercises_table
 from models.user import create_user_table, get_db_connection
-from datetime import datetime  
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
 
-biceps_strategy = BicepsCurlStrategy()
+# Egzersiz stratejilerini saklamak için bir sözlük oluştur
+exercise_strategies = {}
 
-strategies = {
-        'biceps_curl': BicepsCurlStrategy(),
-        # Diğer stratejileri buraya ekleyin
-    }
+strategy_classes = {
+    'biceps_curl': BicepsCurlStrategy,
+    'triceps_extension': TricepsExtensionStrategy,
+    'lateral_raise': LateralRaiseStrategy,
+    'squat': SquatStrategy,
+    'shoulder_press': ShoulderPressStrategy,
+    'crunch': CrunchStrategy
+}
+
 
 # Login formu
 class LoginForm(FlaskForm):
@@ -49,7 +54,7 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()  # Form nesnesi oluşturuluyor
+    form = LoginForm()
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
@@ -61,9 +66,8 @@ def login():
 
         # Şifreyi kontrol et
         if user and check_password_hash(user['password'], password):
-            session['user'] = username
-           #flash('Giriş başarılı!', 'success')
-            return redirect(url_for('layout'))
+            session['user'] = username  # Kullanıcı adını oturumda sakla
+            return redirect(url_for('layout'))  # Giriş başarılı, layout sayfasına yönlendir
         else:
             flash('Kullanıcı adı veya şifre hatalı', 'danger')
 
@@ -71,7 +75,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegisterForm()  # Form nesnesi oluşturuluyor
+    form = RegisterForm()
     if form.validate_on_submit():
         username = form.username.data
         password = generate_password_hash(form.password.data)
@@ -83,13 +87,11 @@ def register():
 
         # Kullanıcıyı veri tabanına kaydet
         conn = get_db_connection()
-        # Kullanıcı adı var mı kontrol et
         existing_user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
 
         if existing_user:
             flash('Kullanıcı adı zaten mevcut!', 'danger')
         else:
-            # Şifreleri kontrol et
             if form.password.data != form.confirm_password.data:
                 flash('Şifreler eşleşmiyor!', 'danger')
             else:
@@ -112,106 +114,140 @@ def layout():
         return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
 
     user = session['user']
-    biceps_strategy = BicepsCurlStrategy()
-    totals = biceps_strategy.get_totals(user)  # Toplam değerleri al
+    
+    # # Kullanıcıya özel tüm hareket stratejilerini oluştur
+    # exercise_strategies[user] = {name: strategy_classes[name]() for name in strategy_classes}
+    # print("exercise_strategies:",exercise_strategies)
+    # # Her bir hareketin toplam değerlerini almak için bir sözlük oluştur
+    # totals = {name: strategy.get_total_exercises(user) for name, strategy in exercise_strategies[user].items()}
+    # print("totals :",totals)
+
+    # Tüm stratejileri oluştur ve toplamları al
+    totals = {exercise: strategy_classes[exercise]().get_totals(user) for exercise in strategy_classes}
 
     return render_template('layout.html', user=user, totals=totals)  # Toplamları sayfaya gönder
+
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
+    session.pop('user_id', None)
     flash('Başarıyla çıkış yaptınız.', 'info')
     return redirect(url_for('login'))
 
 #--------------------------------------------------------------------HAREKETLER--------------------------------------------------------------------
-@app.route('/biceps_curl', methods=['GET', 'POST'])
-def biceps_curl():
+# @app.route('/biceps_curl', methods=['GET', 'POST'])
+# def biceps_curl():
+#     if 'user' not in session:
+#         return jsonify(status='Unauthorized'), 401
+
+#     user = session['user']
+#     strategy = exercise_strategies[user]  # Kullanıcıya özel stratejiyi al
+#     totals = strategy.get_totals(user)  # Toplam değerleri al
+
+#     return render_template('components/biceps_curl.html', user=user, totals=totals)
+
+# @app.route('/triceps_extension')
+# def triceps_extension():
+#     if 'user' not in session:
+#         return redirect(url_for('login'))
+
+#     user = session['user']
+#     strategy = exercise_strategies[user]  # Kullanıcıya özel stratejiyi al
+#     totals = strategy.get_totals(user)  # Toplam değerleri al
+
+#     return render_template('components/triceps_extension.html', user=user, totals=totals)
+
+# @app.route('/lateral_raise')
+# def lateral_raise():
+#     if 'user' not in session:
+#         return redirect(url_for('login'))
+
+#     user = session['user']
+#     strategy = exercise_strategies[user]  # Kullanıcıya özel stratejiyi al
+#     totals = strategy.get_totals(user)  # Toplam değerleri al
+
+#     return render_template('components/lateral_raise.html', user=user, totals=totals)
+
+# @app.route('/squat')
+# def squat():
+#     if 'user' not in session:
+#         return redirect(url_for('login'))
+
+#     user = session['user']
+#     strategy = exercise_strategies[user]  # Kullanıcıya özel stratejiyi al
+#     totals = strategy.get_totals(user)  # Toplam değerleri al
+
+#     return render_template('components/squat.html', user=user, totals=totals)
+
+# @app.route('/shoulder_press')
+# def shoulder_press():
+#     if 'user' not in session:
+#         return redirect(url_for('login'))
+
+#     user = session['user']
+#     strategy = exercise_strategies[user]  # Kullanıcıya özel stratejiyi al
+#     totals = strategy.get_totals(user)  # Toplam değerleri al
+
+#     return render_template('components/shoulder_press.html', user=user, totals=totals)
+
+# @app.route('/crunch')
+# def crunch():
+#     if 'user' not in session:
+#         return redirect(url_for('login'))
+
+#     user = session['user']
+#     strategy = exercise_strategies[user]  # Kullanıcıya özel stratejiyi al
+#     totals = strategy.get_totals(user)  # Toplam değerleri al
+
+#     return render_template('components/crunch.html', user=user, totals=totals)
+
+@app.route('/exercise/<exercise_name>', methods=['GET'])
+def exercise(exercise_name):
     if 'user' not in session:
-        return jsonify(status='Unauthorized'), 401  # Kullanıcı oturumu yoksa hata döndür
-
+        return redirect(url_for('login'))  # Kullanıcı oturumu yoksa giriş sayfasına yönlendir
+    
     user = session['user']
-    biceps_strategy = BicepsCurlStrategy()
-    totals = biceps_strategy.get_totals(user)  # Toplam değerleri al
+    # Kullanıcı için strateji oluştur
+    if exercise_name in strategy_classes:
+        # Stratejiyi oluştur ve kullanıcıya özgü egzersiz stratejisini kaydet
+        exercise_strategies[user] = strategy_classes[exercise_name]()  
+        
+        # Tüm toplam değerleri al
+        totals = {exercise: strategy_classes[exercise]().get_totals(user) for exercise in strategy_classes}
+        
+        # İlgili sayfayı yükle ve toplam değerleri gönder
+        return render_template('components/' + exercise_name + '.html', user=user, totals=totals)  
+    else:
+        flash('Geçersiz egzersiz seçimi', 'danger')
+        return redirect(url_for('layout'))
 
-    return render_template('components/biceps_curl.html', user=session['user'],totals=totals) 
 
-@app.route('/triceps_extension')
-def triceps_extension():
-     if 'user' not in session:
-        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
-
-     user = session['user']
-     triceps_extension_strategy = TricepsExtensionStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
-     totals = triceps_extension_strategy.get_totals(user)  # Toplam değerleri al
-     return render_template('components/triceps_extension.html', user=user, totals=totals)
-
-@app.route('/lateral_raise')
-def lateral_raise():
-     if 'user' not in session:
-        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
-
-     user = session['user']
-     lateral_raise_strategy = LateralRaiseStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
-     totals = lateral_raise_strategy.get_totals(user)  # Toplam değerleri al
-     return render_template('components/lateral_raise.html', user=user, totals=totals)
-
-@app.route('/squat')
-def squat():
-     if 'user' not in session:
-        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
-
-     user = session['user']
-     shoulder_press_strategy = CrunchStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
-     totals = shoulder_press_strategy.get_totals(user)  # Toplam değerleri al
-     return render_template('components/squat.html', user=user, totals=totals)
-
-@app.route('/shoulder_press')
-def shoulder_press():
-     if 'user' not in session:
-        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
-
-     user = session['user']
-     shoulder_press_strategy = ShoulderPressStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
-     totals = shoulder_press_strategy.get_totals(user)  # Toplam değerleri al
-     return render_template('components/shoulder_press.html', user=user, totals=totals)
-
-@app.route('/crunch')
-def crunch():
-    if 'user' not in session:
-        return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
-
-    user = session['user']
-    crunch_strategy = CrunchStrategy()  # CrunchStrategy sınıfınızı oluşturmalısınız
-    totals = crunch_strategy.get_totals(user)  # Toplam değerleri al
-
-    return render_template('components/crunch.html', user=user, totals=totals)  # Toplamları sayfaya gönder
 
 #--------------------------------------------------------------------KAMERA------------------------------------------------------------------------
-exercise_manager = ExerciseManager()
-
 @app.route('/start/<exercise_name>', methods=['POST'])
 def start(exercise_name):
     if 'user' not in session:
         return jsonify(status='Unauthorized'), 401  # Kullanıcı oturumu yoksa hata döndür
 
-    strategy = exercise_manager.get_strategy(exercise_name)
-    strategy.perform_exercise()  # Egzersizi başlat
-    return jsonify(status='Camera Started')
+    # Geçerli bir egzersiz ismi olup olmadığını kontrol et
+    if exercise_name not in strategy_classes:
+        return jsonify(status='Invalid exercise name', error='Egzersiz adı geçersiz'), 400
+
+    user = session['user']
+    exercise_strategies[user] = strategy_classes[exercise_name]()  # Stratejiyi oluştur
+    return jsonify(status='Exercise started', exercise=exercise_name)  # Başarılı yanıt gönder
 
 
-@app.route('/stop/<exercise_name>', methods=['POST'])
-def stop_camera(exercise_name):
-    if 'user' not in session:
-        return jsonify({'error': 'Kullanıcı oturumu yok.'}), 401  # Kullanıcı oturumu yoksa hata döndür
+@app.route('/stop', methods=['POST'])
+def stop():
+    user = session['user']
+    strategy = exercise_strategies.get(user)
 
-    # Kullanıcıya özgü stratejiyi almak için ExerciseManager kullanımı
-    try:
-        strategy = exercise_manager.get_strategy(exercise_name)  # Stratejiyi al
-        strategy.stop_exercise()  # Egzersizi durdurma işlevi
-        return jsonify(status='Camera Stopped')
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400  # Geçersiz egzersiz adı hatası
-
+    if strategy:
+        strategy.stop_exercise()  # Egzersizi durdur
+        return jsonify(status='Exercise Stopped')
+    return jsonify(status='Strategy not found'), 404
 
 @app.route('/finish/<exercise_name>', methods=['POST'])
 def finish_stream(exercise_name):
@@ -219,12 +255,11 @@ def finish_stream(exercise_name):
         return jsonify(status='Unauthorized'), 401  # Kullanıcı oturumu yoksa hata döndür
 
     user = session['user']
-    
-    # Kullanıcıya özgü stratejiyi almak için ExerciseManager kullanımı
-    try:
-        strategy = exercise_manager.get_strategy(exercise_name)  # Gelen egzersiz adına göre stratejiyi al
-    except ValueError as e:
-        return jsonify(status='Invalid exercise name', error=str(e)), 400  # Geçersiz egzersiz adı
+
+    # Kullanıcıya özel stratejiyi al
+    strategy = exercise_strategies.get(user)
+    if strategy is None:
+        return jsonify(status='No active exercise strategy found'), 400  # Strateji yoksa hata döndür
 
     counter_value = strategy.get_counter()  # Seçilen strateji üzerinden sayaç değerini al
     current_date = datetime.now().date()  # Şu anki tarihi al
@@ -243,15 +278,15 @@ def finish_stream(exercise_name):
                 SET {exercise_name} = ?
                 WHERE user = ? AND created_date = ?
             ''', (new_count, user, current_date))
-            conn.commit()
         else:
             # Aynı tarihte kayıt yok, yeni bir kayıt ekle
+            # Diğer egzersizlerin sayısını 0 olarak ayarlıyoruz
             conn.execute(''' 
                 INSERT INTO exercises (user, biceps_curl, triceps_extension, lateral_raise, squat, shoulder_press, crunch, created_date)
                 VALUES (?, ?, 0, 0, 0, 0, 0, ?)
             ''', (user, counter_value, current_date))
-            conn.commit()
 
+        conn.commit()
         conn.close()
 
         # Sayaç sıfırlama işlemi
@@ -260,25 +295,28 @@ def finish_stream(exercise_name):
         # Kullanıcıya başarı mesajı döndür
         return jsonify(status='Exercise Finished', counter=counter_value)
     else:
-        return jsonify(status='No data to save')  # Sayaç sıfırsa veri kaydedilmez
+        return jsonify(status='No data to save')  # Sayaç sıfırsa veri kaydedilmez 
 
 
 #-------------------------------------------------------------------HAREKET METHODLARI------------------------------------------------------------
-@app.route('/video_feed/<exercise_name>')
-def video_feed(exercise_name):
-    strategy = exercise_manager.get_strategy(exercise_name)  # Egzersiz stratejisini al
-    return Response(strategy.perform_exercise(), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/video_feed')
+def video_feed():
+    user = session['user']
+    strategy = exercise_strategies.get(user)
 
-@app.route('/get_counter/<exercise_name>')
-def get_counter(exercise_name):
-    if 'user' not in session:
-        return jsonify({'error': 'Kullanıcı oturumu yok.'}), 401  # Kullanıcı oturumu yoksa hata döndür
+    if strategy:
+        return Response(strategy.perform_exercise(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return jsonify(status='Strategy not found'), 404
 
-    strategy = exercise_manager.get_strategy(exercise_name)  # Stratejiyi al
-    counter_value = strategy.get_counter() 
+@app.route('/get_counter')
+def get_counter():
+    user = session['user']
+    strategy = exercise_strategies.get(user)
     
-    print("counter_value",counter_value)
-    return jsonify({'counter': counter_value})  # Sayaç değerini döndür
+    if strategy:
+        counter_value = strategy.get_counter()
+        return jsonify({'counter': counter_value})
+    return jsonify(status='Strategy not found'), 404
 
 if __name__ == '__main__':
     create_user_table()

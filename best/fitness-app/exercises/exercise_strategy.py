@@ -13,7 +13,7 @@ class ExerciseStrategy(ABC):
         
         # Her hareket için toplam sayıları al
         cursor.execute('''
-            SELECT 
+            SELECT
                 SUM(biceps_curl) AS total_biceps_curl,
                 SUM(triceps_extension) AS total_triceps_extension,
                 SUM(lateral_raise) AS total_lateral_raise,

@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block content%}
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biceps Curl - Live Stream</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
 </head>
 
 <body>
@@ -45,105 +44,71 @@
 
     <script>
         // Tarihi otomatik olarak ayarla
+        document.getElementById("date").innerText = new Date().toLocaleDateString();
+
         function updateCounter() {
-            const exerciseName = 'biceps_curl'; // Bu değeri dinamik olarak da alabilirsiniz
-            $.get(`/get_counter/${exerciseName}`, function (data) {
-                if (data.counter !== undefined) {
-                    $('#counter').text(data.counter);
-                } else {
-                    console.error(data.error); // Hata durumunu konsola yazdır
-                }
+            $.getJSON("/get_counter", function (data) {
+                $("#counter").text(data.counter);
             });
         }
 
+        // Sayfa yüklendikten sonra her 1 saniyede bir counter'ı güncelle
         $(document).ready(function () {
-            setInterval(updateCounter, 1000);
+            setInterval(updateCounter, 1000);  // 1 saniyede bir günceller
         });
 
         function startCamera() {
             fetch('/start/biceps_curl', {
                 method: 'POST'
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to start camera.');
-                    }
-                    document.getElementById('video_feed').src = '/video_feed/biceps_curl'; // Video akış URL'si
-                    updateCounter();  // Counter'ı güncellemeye başla
-                })
-                .catch(error => console.error('Error:', error));
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to start camera.');
+                }
+                document.getElementById('video_feed').src = '/video_feed'; // Video akış URL'si
+                updateCounter();  // Counter'ı güncellemeye başla
+            })
+            .catch(error => console.error('Error:', error));
         }
 
         function stopCamera() {
-            document.getElementById('video_feed').src = "";  // Video feed'i durdur
-        }
-
-        function finishStream() {
-            document.getElementById('video_feed').src = "";  // Video feed'i bitir
-            alert('Video stream finished');
-        }
-        function stopCamera() {
-            fetch('/stop/biceps_curl', {
+            fetch('/stop', {
                 method: 'POST'
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to stop camera.');
-                    }
-                    document.getElementById('video_feed').src = ''; // Video kaynağını temizle
-                })
-                .catch(error => console.error('Error:', error));
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to stop camera.');
+                }
+                document.getElementById('video_feed').src = "";  // Video feed'i durdur
+            })
+            .catch(error => console.error('Error:', error));
         }
 
         function finishStream() {
-            // Önce sayaç değerini kontrol et
-            fetch('/get_counter/biceps_curl')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.counter > 0) {
-                        // Sayaç değeri pozitifse, finish POST isteğini gönder
-                        return fetch('/finish/biceps_curl', { method: 'POST' });
-                    } else {
-                        // Sayaç sıfırsa hata bildirimi
-                        Swal.fire({
-                            title: "Hata",
-                            text: "Henüz sayım yapılmadı!",
-                            icon: "warning"
-                        });
-                        throw new Error('Counter is zero');
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();  // Yanıtı JSON olarak çözümle
-                })
-                .then(data => {
-                    if (data.status === 'Exercise Finished') {
-                        Swal.fire({
-                            title: "Exercise Kaydedildi!",
-                            icon: "success"
-                        });
-                    } else {
-                        Swal.fire({
-                            title: "Bir hata oluştu: " + data.status,
-                            icon: "warning"
-                        });
-                    }
-                })
-                .catch(error => {
+            fetch('/finish/biceps_curl', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'Exercise Finished') {
+                    // Başarılı bildirim
+                    Swal.fire({
+                        title: "Exercise Kaydedildi!",
+                        icon: "success"
+                    });
+                } else {
                     Swal.fire({
                         title: "Bir hata oluştu!",
-                        text: error.message,
-                        icon: "error"
+                        icon: "warning"
                     });
-                    console.error('Error:', error);
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: "Bir hata oluştu!",
+                    icon: "warning"
                 });
+                console.error('Error:', error);
+            });
         }
-
-
-
     </script>
 
 </body>

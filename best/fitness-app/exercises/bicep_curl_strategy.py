@@ -5,6 +5,7 @@ import numpy as np
 from exercises.exercise_strategy import ExerciseStrategy
 from models.user import get_db_connection
 
+
 class BicepsCurlStrategy(ExerciseStrategy):
 
     def __init__(self):
@@ -113,7 +114,7 @@ class BicepsCurlStrategy(ExerciseStrategy):
         self.counter = 0
         
     def get_counter(self):
-        return self.counter # Sayaç değerini döndüren fonksiyon
+        return self.counter  # Sayaç değerini döndüren fonksiyon
   
     def get_totals(self, user):
         return self.get_total_exercises(user)  # Ortak metodu kullan   

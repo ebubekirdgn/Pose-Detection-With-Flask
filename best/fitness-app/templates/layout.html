@@ -3,9 +3,12 @@
 
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>FITNESS AI</title>
+  <title>Fitness AI - Kişisel Antrenman Asistanı</title>
   <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
   <link rel="icon" href="{{ url_for('static', filename='img/kaiadmin/favicon.ico') }}" type="image/x-icon" />
+
+
+
   <!-- CSS Files -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/plugins.min.css') }}" />
@@ -59,8 +62,8 @@
               <div class="collapse" id="base">
                 <ul class="nav nav-collapse">
                   <li>
-                    <a class="nav-link" href="/biceps_curl" data-url="/api/biceps_curl">
-                      <span class="sub-item my-span" >Biceps Curl</span>
+                    <a class="nav-link" href="{{ url_for('exercise', exercise_name='biceps_curl') }}">
+                      <span class="sub-item my-span">Biceps Curl</span>
                     </a>
                   </li>
                   <li>
@@ -189,7 +192,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Biceps Curl</p>
-                        <h4 class="card-title">{{ totals.total_biceps_curl }}</h4>
+                        <h4 class="card-title">{{ totals['biceps_curl']['total_biceps_curl'] }}</h4>
                       </div>
                     </div>
                   </div>
@@ -209,7 +212,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Triceps Extension</p>
-                        <h4 class="card-title">{{ totals.total_triceps_extension }}</h4>
+                        <h4 class="card-title">{{ totals['triceps_extension']['total_triceps_extension'] }}</h4>
                       </div>
                     </div>
                   </div>
@@ -229,7 +232,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Lateral Raise</p>
-                        <h4 class="card-title">{{ totals.total_lateral_raise }}</h4>
+                        <h4 class="card-title">{{ totals['lateral_raise']['total_lateral_raise'] }}</h4>
                       </div>
                     </div>
                   </div>
@@ -249,7 +252,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Squat</p>
-                        <h4 class="card-title">{{ totals.total_squat }}</h4>
+                        <h4 class="card-title">{{ totals['squat']['total_squat'] }}</h4>
                       </div>
                     </div>
                   </div>
@@ -269,7 +272,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Crunch</p>
-                        <h4 class="card-title"> {{ totals.total_crunch }}</h4>
+                        <h4 class="card-title"> {{ totals['crunch']['total_crunch'] }}</h4>
                       </div>
                     </div>
                   </div>
@@ -289,7 +292,7 @@
                     <div class="col col-stats ms-3 ms-sm-0">
                       <div class="numbers">
                         <p class="card-category">Shoulder Press</p>
-                        <h4 class="card-title">{{ totals.total_shoulder_press }}</h4>
+                        <h4 class="card-title">{{ totals['shoulder_press']['total_shoulder_press'] }}</h4>
                       </div>
                     </div>
                   </div>
