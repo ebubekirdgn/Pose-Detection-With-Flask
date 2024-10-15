@@ -328,7 +328,6 @@ def get_counter():
 
 #endregion
 
-
 if __name__ == '__main__':
     create_user_table()
     create_exercises_table()
