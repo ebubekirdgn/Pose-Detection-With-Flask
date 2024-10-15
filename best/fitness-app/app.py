@@ -28,7 +28,6 @@ strategy_classes = {
     'crunch': CrunchStrategy
 }
 
-
 # Login formu
 class LoginForm(FlaskForm):
     username = StringField('Kullanıcı Adı', validators=[DataRequired()])
@@ -48,6 +47,8 @@ class RegisterForm(FlaskForm):
     submit = SubmitField('Kayıt Ol')
 
 #--------------------------------------------------ROOTLAR ------------------------------------------------------------------------------------
+
+#region routelar burada
 @app.route('/')
 def home():
     return redirect(url_for('login'))
@@ -127,7 +128,6 @@ def layout():
 
     return render_template('layout.html', user=user, totals=totals)  # Toplamları sayfaya gönder
 
-
 @app.route('/logout')
 def logout():
     session.pop('user', None)
@@ -135,7 +135,11 @@ def logout():
     flash('Başarıyla çıkış yaptınız.', 'info')
     return redirect(url_for('login'))
 
+#endregion
+
 #--------------------------------------------------------------------HAREKETLER--------------------------------------------------------------------
+
+#region eski kodlar
 # @app.route('/biceps_curl', methods=['GET', 'POST'])
 # def biceps_curl():
 #     if 'user' not in session:
@@ -202,6 +206,8 @@ def logout():
 
 #     return render_template('components/crunch.html', user=user, totals=totals)
 
+#endregion
+
 @app.route('/exercise/<exercise_name>', methods=['GET'])
 def exercise(exercise_name):
     if 'user' not in session:
@@ -222,9 +228,9 @@ def exercise(exercise_name):
         flash('Geçersiz egzersiz seçimi', 'danger')
         return redirect(url_for('layout'))
 
+#--------------------------------------------------------------------KAMERA AKSİYONLARI------------------------------------------------------------------------
 
-
-#--------------------------------------------------------------------KAMERA------------------------------------------------------------------------
+#region start-stop-finish
 @app.route('/start/<exercise_name>', methods=['POST'])
 def start(exercise_name):
     if 'user' not in session:
@@ -237,7 +243,6 @@ def start(exercise_name):
     user = session['user']
     exercise_strategies[user] = strategy_classes[exercise_name]()  # Stratejiyi oluştur
     return jsonify(status='Exercise started', exercise=exercise_name)  # Başarılı yanıt gönder
-
 
 @app.route('/stop', methods=['POST'])
 def stop():
@@ -297,8 +302,11 @@ def finish_stream(exercise_name):
     else:
         return jsonify(status='No data to save')  # Sayaç sıfırsa veri kaydedilmez 
 
+#endregion
 
 #-------------------------------------------------------------------HAREKET METHODLARI------------------------------------------------------------
+
+#region hareket kodları
 @app.route('/video_feed')
 def video_feed():
     user = session['user']
@@ -317,6 +325,9 @@ def get_counter():
         counter_value = strategy.get_counter()
         return jsonify({'counter': counter_value})
     return jsonify(status='Strategy not found'), 404
+
+#endregion
+
 
 if __name__ == '__main__':
     create_user_table()
