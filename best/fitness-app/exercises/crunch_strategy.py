@@ -18,6 +18,17 @@ class CrunchStrategy(ExerciseStrategy):
         self.cap = cv2.VideoCapture(0)  # Kamerayı aç
         self.stage = None
 
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        
+        # Kare hızını artır
+        self.cap.set(cv2.CAP_PROP_FPS, 30)
+
+        # Parlaklık ve kontrast ayarları
+        self.cap.set(cv2.CAP_PROP_BRIGHTNESS, 150)
+        self.cap.set(cv2.CAP_PROP_CONTRAST, 50)
+        self.cap.set(cv2.CAP_PROP_EXPOSURE, -5)
+        
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while self.cap.isOpened():
                 ret, frame = self.cap.read()

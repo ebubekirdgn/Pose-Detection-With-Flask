@@ -44,6 +44,17 @@ class ShoulderPressStrategy(ExerciseStrategy):
         self.is_exercising = True
         self.cap = cv2.VideoCapture(0)
 
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        
+        # Kare hızını artır
+        self.cap.set(cv2.CAP_PROP_FPS, 30)
+
+        # Parlaklık ve kontrast ayarları
+        self.cap.set(cv2.CAP_PROP_BRIGHTNESS, 150)
+        self.cap.set(cv2.CAP_PROP_CONTRAST, 50)
+        self.cap.set(cv2.CAP_PROP_EXPOSURE, -5)
+        
         max_angle = 160  # Maksimum açı sınırı
         tolerance = 30  # Açı toleransı
 
@@ -51,7 +62,7 @@ class ShoulderPressStrategy(ExerciseStrategy):
             while self.cap.isOpened():
                 ret, frame = self.cap.read()
                 
-                # Renkleri BGR'den RGB'ye çevir
+                # Renk dönüşümü
                 image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 image.flags.writeable = False
                 
