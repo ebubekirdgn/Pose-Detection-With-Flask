@@ -16,7 +16,7 @@
         <div class="row">
             <div class="col-md-8">
                 <div class="jumbotron">
-                    <img id="video_feed" src="#" alt="Video Feed" style="width: 100%; height: auto;" />
+                    <img id="video_feed" src="{{ url_for('static', filename='img/camera.svg') }}" alt="Video Feed" class="" style="width: 50%; height: auto;" />
                     <div class="controls mt-3">
                         <button class="btn btn-primary" onclick="startCamera()">Start Camera</button>
                         <button class="btn btn-secondary" onclick="stopCamera()">Stop Camera</button>

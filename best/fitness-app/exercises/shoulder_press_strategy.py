@@ -121,9 +121,6 @@ class ShoulderPressStrategy(ExerciseStrategy):
         self.cap.release()
         cv2.destroyAllWindows()
 
-    def get_totals(self, user):
-        return self.get_total_exercises(user)  # Ortak metodu kullan   
-    
     def stop_exercise(self):
         self.is_exercising = False
         if self.cap:
