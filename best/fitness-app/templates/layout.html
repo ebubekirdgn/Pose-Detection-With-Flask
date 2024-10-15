@@ -67,27 +67,29 @@
                     </a>
                   </li>
                   <li>
-                    <a class="nav-link" href="/triceps_extension">
+                    <a class="nav-link" href="{{ url_for('exercise', exercise_name='triceps_extension') }}">
                       <span class="sub-item my-span" data-url="/api/triceps_extension">Triceps Extension</span>
                     </a>
                   </li>
                   <li>
-                    <a class="nav-link" href="/lateral_raise" data-url="/api/lateral_raise">
-                      <span class="sub-item my-span" >Lateral Raise</span>
+                    <a class="nav-link" href="{{ url_for('exercise', exercise_name='lateral_raise') }}"
+                      data-url="/api/lateral_raise">
+                      <span class="sub-item my-span">Lateral Raise</span>
                     </a>
                   </li>
                   <li>
-                    <a class="nav-link" href="/squat" data-url="/api/squat">
-                      <span class="sub-item my-span" >Squat</span>
+                    <a class="nav-link" href="{{ url_for('exercise', exercise_name='squat') }}" data-url="/api/squat">
+                      <span class="sub-item my-span">Squat</span>
                     </a>
                   </li>
                   <li>
-                    <a class="nav-link" href="/shoulder_press" data-url="/api/shoulder_press">
+                    <a class="nav-link" href="{{ url_for('exercise', exercise_name='shoulder_press') }}"
+                      data-url="/api/shoulder_press">
                       <span class="sub-item my-span">Shoulder Press</span>
                     </a>
                   </li>
                   <li>
-                    <a class="nav-link" href="/crunch" data-url="/api/crunch">
+                    <a class="nav-link" href="{{ url_for('exercise', exercise_name='crunch') }}" data-url="/api/crunch">
                       <span class="sub-item my-span">Crunch</span>
                     </a>
                   </li>
@@ -304,9 +306,9 @@
             <div class="col-md-12">
               <div class="card card-round" id="exercise-content">
                 {% block content %}
-                  <!-- Varsayılan içerik buraya gelecek -->
+                <!-- Varsayılan içerik buraya gelecek -->
                 {% endblock %}
-               
+
               </div>
             </div>
 
@@ -349,17 +351,17 @@
     });
 
     function loadExercise(exercise) {
-            $.ajax({
-                url: `/${exercise}`,  // Egzersiz URL'si
-                type: 'GET',
-                success: function(response) {
-                    $('#exercise-content').html(response);  // Gelen içeriği yerleştir
-                },
-                error: function() {
-                    alert('Egzersiz yüklenirken bir hata oluştu.');
-                }
-            });
+      $.ajax({
+        url: `/${exercise}`,  // Egzersiz URL'si
+        type: 'GET',
+        success: function (response) {
+          $('#exercise-content').html(response);  // Gelen içeriği yerleştir
+        },
+        error: function () {
+          alert('Egzersiz yüklenirken bir hata oluştu.');
         }
+      });
+    }
   </script>
   <!--   Core JS Files   -->
   <script src="{{ url_for('static', filename='js/core/jquery-3.7.1.min.js') }}"></script>
@@ -398,57 +400,6 @@
   <script src="{{ url_for('static', filename='js/setting-demo.js') }}"></script>
   <script src="{{ url_for('static', filename='js/demo.js') }}"></script>
 
-  <script>
-    $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
-      type: "line",
-      height: "70",
-      width: "100%",
-      lineWidth: "2",
-      lineColor: "#177dff",
-      fillColor: "rgba(23, 125, 255, 0.14)",
-    });
-
-    $("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
-      type: "line",
-      height: "70",
-      width: "100%",
-      lineWidth: "2",
-      lineColor: "#f3545d",
-      fillColor: "rgba(243, 84, 93, .14)",
-    });
-
-    $("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
-      type: "line",
-      height: "70",
-      width: "100%",
-      lineWidth: "2",
-      lineColor: "#ffa534",
-      fillColor: "rgba(255, 165, 52, .14)",
-    });
-  </script>
-<!--
-  <script>
-    $(document).ready(function () {
-      $('.my-span').click(function () {
-        var url = $(this).data('url'); // Tıklanan span'ın data-url değerini al
-
-        $.ajax({
-          url: url,  // Backend'deki route
-          type: 'POST',  // İstek türü
-          data: {
-            message: 'Span tıklandı!'
-          },
-          success: function (response) {
-            alert(response); // Backend'den gelen yanıt
-          },
-          error: function (xhr, status, error) {
-            alert('Hata: ' + error);
-          }
-        });
-      });
-    });
-  </script>-->
-  
 </body>
 
 </html>

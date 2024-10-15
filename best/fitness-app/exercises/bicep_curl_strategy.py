@@ -3,7 +3,6 @@ import mediapipe as mp
 import numpy as np
 
 from exercises.exercise_strategy import ExerciseStrategy
-from models.user import get_db_connection
 
 
 class BicepsCurlStrategy(ExerciseStrategy):
