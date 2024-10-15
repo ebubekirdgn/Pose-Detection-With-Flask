@@ -9,6 +9,7 @@ class SquatStrategy(ExerciseStrategy):
         self.is_exercising = False
         self.cap = None
         self.stage = None  # 'up' veya 'down' durumu
+    
     def calculate_angle(self, a, b, c):
         """Üç nokta arasındaki açıyı hesapla."""
         a = np.array(a)

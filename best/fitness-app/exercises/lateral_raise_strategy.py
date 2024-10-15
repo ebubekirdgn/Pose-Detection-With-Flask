@@ -4,6 +4,7 @@ import numpy as np
 from exercises.exercise_strategy import ExerciseStrategy
 
 class LateralRaiseStrategy(ExerciseStrategy):
+    
     def __init__(self):
         self.counter = 0
         self.is_exercising = False
