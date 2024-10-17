@@ -29,6 +29,10 @@ class LateralRaiseStrategy(ExerciseStrategy):
         self.is_exercising = True
         self.cap = cv2.VideoCapture(0)
 
+         # --- Kamera çözünürlüğünü artır ---
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Genişlik
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Yükseklik
+        
         # Hedef işaretli noktalar (Lateral Raise için)
         landmarks_to_highlight = [23, 11, 13, 24, 12, 14, 16, 14, 12, 15, 13, 11]
 
