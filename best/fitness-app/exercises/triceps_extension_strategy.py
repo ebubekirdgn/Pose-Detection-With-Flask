@@ -30,7 +30,7 @@ class TricepsExtensionStrategy(ExerciseStrategy):
         mp_drawing = mp.solutions.drawing_utils
         self.is_exercising = True
         self.cap = cv2.VideoCapture(0)
-
+ 
         # --- Kamera çözünürlüğünü artır ---
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Genişlik
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Yükseklik
