@@ -31,6 +31,10 @@ class TricepsExtensionStrategy(ExerciseStrategy):
         self.is_exercising = True
         self.cap = cv2.VideoCapture(0)
 
+        # --- Kamera çözünürlüğünü artır ---
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Genişlik
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Yükseklik
+
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while self.cap.isOpened():
                 ret, frame = self.cap.read()
@@ -49,18 +53,18 @@ class TricepsExtensionStrategy(ExerciseStrategy):
 
                     # Get landmarks for both arms
                     left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x * frame.shape[1],
-                                     landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * frame.shape[0]]
+                                    landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y * frame.shape[0]]
                     left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x * frame.shape[1],
-                                   landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * frame.shape[0]]
                     left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x * frame.shape[1],
-                                   landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y * frame.shape[0]]
 
                     right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x * frame.shape[1],
-                                      landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y * frame.shape[0]]
+                                    landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y * frame.shape[0]]
                     right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x * frame.shape[1],
-                                   landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y * frame.shape[0]]
                     right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x * frame.shape[1],
-                                   landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y * frame.shape[0]]
+                                landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y * frame.shape[0]]
 
                     # Calculate angles for both arms
                     left_angle = self.calculate_angle(left_shoulder, left_elbow, left_wrist)
@@ -79,15 +83,20 @@ class TricepsExtensionStrategy(ExerciseStrategy):
                     cv2.putText(frame, f'Left Angle: {int(left_angle)}', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
                     cv2.putText(frame, f'Right Angle: {int(right_angle)}', (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
+                    # Draw the pose landmarks
+                    mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS, 
+                                            mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=5, circle_radius=5),  # Kalın çizgi
+                                            mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=5, circle_radius=5))  # Kalın nokta
+
                 # Convert the image to JPEG format for streaming
                 ret, buffer = cv2.imencode('.jpg', frame)
                 frame = buffer.tobytes()
 
                 yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
         self.cap.release()
-    
+
     def stop_exercise(self):
         self.is_exercising = False
         if self.cap:
