@@ -79,30 +79,30 @@
             fetch('/start/lateral_raise', {
                 method: 'POST'
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to start camera.');
-                }
-                document.getElementById('video_feed').src = '/video_feed'; // Video akış URL'si
-                updateCounter();  // Counter'ı güncellemeye başla
-                cameraStarted = true;  // Kamera çalışıyor
-            })
-            .catch(error => console.error('Error:', error));
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to start camera.');
+                    }
+                    document.getElementById('video_feed').src = '/video_feed'; // Video akış URL'si
+                    updateCounter();  // Counter'ı güncellemeye başla
+                    cameraStarted = true;  // Kamera çalışıyor
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function stopCamera() {
             fetch('/stop', {
                 method: 'POST'
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to stop camera.');
-                }
-                document.getElementById('video_feed').src = "";  // Video feed'i durdur
-                cameraStarted = false;  // Kamera durduruldu
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to stop camera.');
+                    }
+                    document.getElementById('video_feed').src = "";  // Video feed'i durdur
+                    cameraStarted = false;  // Kamera durduruldu
 
-            })
-            .catch(error => console.error('Error:', error));
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function finishStream() {
