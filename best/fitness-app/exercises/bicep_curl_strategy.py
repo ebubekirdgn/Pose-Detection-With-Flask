@@ -33,17 +33,9 @@ class BicepsCurlStrategy(ExerciseStrategy):
         mp_drawing = mp.solutions.drawing_utils
         self.cap = cv2.VideoCapture(0)  # Kamerayı aç
         self.stage = None
-        # Kamera çözünürlüğünü artır
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        
-        # Kare hızını artır
-        self.cap.set(cv2.CAP_PROP_FPS, 30)
-
-        # Parlaklık ve kontrast ayarları
-        self.cap.set(cv2.CAP_PROP_BRIGHTNESS, 150)
-        self.cap.set(cv2.CAP_PROP_CONTRAST, 50)
-        self.cap.set(cv2.CAP_PROP_EXPOSURE, -5)
+        # --- Kamera çözünürlüğünü artır ---
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Genişlik
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Yükseklik
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while self.cap.isOpened():
@@ -93,18 +85,20 @@ class BicepsCurlStrategy(ExerciseStrategy):
                         self.counter += 1  # Sayaç artır
 
                     # Ekrana yazdırma
-                    cv2.putText(image, f'Counter: {self.counter}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    cv2.putText(image, f'Counter: {self.counter}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3)
                     cv2.putText(image, f'{int(angle1)}', (int(left_elbow[0]), int(left_elbow[1] - 20)),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                                cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 3)
                     cv2.putText(image, f'{int(angle2)}', (int(right_elbow[0]), int(right_elbow[1] - 20)),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                                cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 3)
 
                 except Exception as e:
                     pass
 
-                # Pozları çiz
+                # Pozları çiz (kalınlık artırıldı)
                 if results.pose_landmarks:
-                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS, 
+                                            mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=5, circle_radius=5),  # Kalın çizgi
+                                            mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=5, circle_radius=5))  # Kalın nokta
 
                 ret, buffer = cv2.imencode('.jpg', image)  # JPEG formatına çevir
                 frame = buffer.tobytes()
@@ -113,6 +107,7 @@ class BicepsCurlStrategy(ExerciseStrategy):
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
         self.cap.release()
+
 
     def stop_exercise(self):
         self.is_exercising = False
