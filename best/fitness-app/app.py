@@ -115,18 +115,18 @@ def layout():
         return redirect(url_for('login'))  # Oturum yoksa giriş sayfasına yönlendir
 
     user = session['user']
-    
-    # # Kullanıcıya özel tüm hareket stratejilerini oluştur
-    # exercise_strategies[user] = {name: strategy_classes[name]() for name in strategy_classes}
-    # print("exercise_strategies:",exercise_strategies)
-    # # Her bir hareketin toplam değerlerini almak için bir sözlük oluştur
-    # totals = {name: strategy.get_total_exercises(user) for name, strategy in exercise_strategies[user].items()}
-    # print("totals :",totals)
-
     # Tüm stratejileri oluştur ve toplamları al
     totals = {exercise: strategy_classes[exercise]().get_totals(user) for exercise in strategy_classes}
 
     return render_template('layout.html', user=user, totals=totals)  # Toplamları sayfaya gönder
+
+
+@app.route('/statistics')
+def statistics():
+    user = session['user']
+    # Tüm stratejileri oluştur ve toplamları al
+    totals = {exercise: strategy_classes[exercise]().get_totals(user) for exercise in strategy_classes}
+    return render_template('statistics.html', user=user, totals=totals)  # Boş bir dict gönder
 
 @app.route('/logout')
 def logout():
@@ -134,7 +134,7 @@ def logout():
     session.pop('user_id', None)
     flash('Başarıyla çıkış yaptınız.', 'info')
     return redirect(url_for('login'))
-
+ 
 #endregion
 
 #--------------------------------------------------------------------HAREKETLER--------------------------------------------------------------------
