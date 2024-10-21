@@ -46,6 +46,9 @@ class ShoulderPressStrategy(ExerciseStrategy):
 
         max_angle = 160  # Maksimum açı sınırı
         tolerance = 30  # Açı toleransı
+        
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Genişlik
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Yükseklik
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while self.cap.isOpened():
