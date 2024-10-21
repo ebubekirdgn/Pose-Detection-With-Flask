@@ -7,35 +7,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biceps Curl - Live Stream</title>
+    <title>Shoulder Press - Live Stream</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 
 <body>
-    <div class="container">
+    <div class="page-inner">
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-7">
                 <div class="jumbotron">
-                    <img id="video_feed" src="{{ url_for('static', filename='img/camera.svg') }}" alt="Video Feed" class="" style="width: 50%; height: auto;" />
+
+                    <img id="video_feed" src="{{ url_for('static', filename='img/camera.svg') }}" alt="Video Feed"
+                        class="" style="width: 100%; height: auto;" />
                     <div class="controls mt-3">
-                        <button class="btn btn-primary" onclick="startCamera()">Start Camera</button>
-                        <button class="btn btn-secondary" onclick="stopCamera()">Stop Camera</button>
-                        <button class="btn btn-danger" onclick="finishStream()">Finish</button>
+
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Scoreboard</h3>
+            <div class="col-md-4 ">
+                <div class="card-pricing2 card-primary">
+                    <div class="pricing-header">
+                        <h3 class="fw-bold mb-3">Scoreboard</h3>
+                        <span class="sub-title">User : {{ user }}</span>
                     </div>
-                    <div class="card-body">
-                        <p><strong>Athlete Name:</strong> {{ user }}</p>
-                        <p><strong>Counter: <span id="counter">0</span> </strong></p>
-                        <p><strong>Date:</strong> <span id="date"></span></p>
+                    <div class="price-value">
+                        <div class="value">
+                            <span class="month">Counter</span>
+                            <span class="currency"><b><span id="counter">0</span></b></span>
+                        </div>
                     </div>
+                    <ul class="pricing-content">
+                        <li>
+                            <p class="d-flex justify-content-center"><b><strong>Date:</strong> <span
+                                        id="date"></span></b></p>
+                        </li>
+                        <li>
+                            <div class="d-flex justify-content-center">
+                                <button class="btn btn-primary mx-1" onclick="startCamera()">Start Camera</button>
+                                <button class="btn btn-secondary mx-1" onclick="stopCamera()">Stop Camera</button>
+                                <button class="btn btn-danger mx-1" onclick="finishStream()">Finish</button>
+                            </div>
+
+                        </li>
+                    </ul>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -45,6 +62,7 @@
     <script>
         // Tarihi otomatik olarak ayarla
         document.getElementById("date").innerText = new Date().toLocaleDateString();
+        let cameraStarted = false;  // Kamera durumu için bir değişken
 
         function updateCounter() {
             $.getJSON("/get_counter", function (data) {
@@ -61,53 +79,63 @@
             fetch('/start/shoulder_press', {
                 method: 'POST'
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to start camera.');
-                }
-                document.getElementById('video_feed').src = '/video_feed'; // Video akış URL'si
-                updateCounter();  // Counter'ı güncellemeye başla
-            })
-            .catch(error => console.error('Error:', error));
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to start camera.');
+                    }
+                    document.getElementById('video_feed').src = '/video_feed';  // Video akış URL'si
+                    updateCounter();  // Counter'ı güncellemeye başla
+                    cameraStarted = true;  // Kamera çalışıyor
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function stopCamera() {
             fetch('/stop', {
                 method: 'POST'
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to stop camera.');
-                }
-                document.getElementById('video_feed').src = "";  // Video feed'i durdur
-            })
-            .catch(error => console.error('Error:', error));
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to stop camera.');
+                    }
+                    document.getElementById('video_feed').src = "";  // Video feed'i durdur
+                    cameraStarted = false;  // Kamera durduruldu
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         function finishStream() {
-            fetch('/finish/shoulder_press', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'Exercise Finished') {
-                    // Başarılı bildirim
-                    Swal.fire({
-                        title: "Exercise Kaydedildi!",
-                        icon: "success"
-                    });
-                } else {
-                    Swal.fire({
-                        title: "Bir hata oluştu!",
-                        icon: "warning"
-                    });
-                }
-            })
-            .catch(error => {
+            if (cameraStarted) {
+                // Eğer kamera hala çalışıyorsa kullanıcıyı uyar
                 Swal.fire({
-                    title: "Bir hata oluştu!",
+                    title: "Önce kamerayı durdurun!",
                     icon: "warning"
                 });
-                console.error('Error:', error);
-            });
+            } else {
+                fetch('/finish/shoulder_press', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'Exercise Finished') {
+                            // Başarılı bildirim
+                            Swal.fire({
+                                title: "Exercise Kaydedildi!",
+                                icon: "success"
+                            });
+                        } else {
+                            Swal.fire({
+                                title: "Bir hata oluştu!",
+                                icon: "warning"
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: "Bir hata oluştu!",
+                            icon: "warning"
+                        });
+                        console.error('Error:', error);
+                    });
+            }
         }
     </script>
 
