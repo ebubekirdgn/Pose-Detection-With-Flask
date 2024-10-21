@@ -125,8 +125,8 @@ def layout():
 def statistics():
     user = session['user']
     # Tüm stratejileri oluştur ve toplamları al
-    totals = {exercise: strategy_classes[exercise]().get_totals(user) for exercise in strategy_classes}
-    return render_template('statistics.html', user=user, totals=totals)  # Boş bir dict gönder
+    exerciseTotals = {exercise: strategy_classes[exercise]().get_totals(user) for exercise in strategy_classes}
+    return render_template('statistics.html', user=user, totals=exerciseTotals)  # Boş bir dict gönder
 
 @app.route('/logout')
 def logout():
