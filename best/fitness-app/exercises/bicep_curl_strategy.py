@@ -4,14 +4,13 @@ import numpy as np
 
 from exercises.exercise_strategy import ExerciseStrategy
 
-
 class BicepsCurlStrategy(ExerciseStrategy):
 
     def __init__(self):
         self.counter = 0
         self.is_exercising = False
         self.cap = None  # VideoCapture nesnesi
-            
+
     @staticmethod
     def calculate_angle(a, b, c):
         a = np.array(a)  # İlk nokta
@@ -107,7 +106,6 @@ class BicepsCurlStrategy(ExerciseStrategy):
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
         self.cap.release()
-
 
     def stop_exercise(self):
         self.is_exercising = False
