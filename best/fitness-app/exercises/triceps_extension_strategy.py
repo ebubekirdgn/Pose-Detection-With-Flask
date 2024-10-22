@@ -11,7 +11,7 @@ class TricepsExtensionStrategy(ExerciseStrategy):
         self.cap = None
         self.stage = None  # 'up' veya 'down' durumu
 
-    def calculate_angle(self,a, b, c):
+    def calculate_angle(self, a, b, c):
         a = np.array(a)  # İlk nokta
         b = np.array(b)  # Ortadaki nokta
         c = np.array(c)  # Son nokta
@@ -74,7 +74,7 @@ class TricepsExtensionStrategy(ExerciseStrategy):
                     if left_angle > 160 and right_angle > 160:
                         self.stage = "down"  # Down movement
 
-                    if left_angle < 30 and right_angle < 30 and self.stage == 'down':
+                    if (left_angle < 75 and right_angle < 75) and self.stage == 'down':
                         self.stage = "up"  # Up movement
                         self.counter += 1  # Increment counter
 
@@ -111,4 +111,3 @@ class TricepsExtensionStrategy(ExerciseStrategy):
     
     def get_totals(self, user):
         return self.get_total_exercises(user)  # Ortak metodu kullan
-
