@@ -1,5 +1,3 @@
- # Pose Detection
- 
 # Pose Detection with Flask
 
 ## About the Project
@@ -93,7 +91,7 @@ fitness-app/
 │   └── js/
 ├── templates/
 │   └── index.html
-├── strategies/
+├── exercises/
 │   ├── exercise_strategy.py
 │   ├── squat_strategy.py
 │   └── pushup_strategy.py
@@ -114,7 +112,7 @@ Contributions are welcome! To contribute:
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
-[Your Name] - [Your Email]
+[EbubekirDogan] - [ebubekir.dogan@bil.omu.edu.tr]
 
 Project Link: [https://github.com/ebubekirdgn/Pose-Detection-With-Flask](https://github.com/ebubekirdgn/Pose-Detection-With-Flask)
 
